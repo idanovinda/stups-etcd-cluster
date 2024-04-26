@@ -379,8 +379,13 @@ class EtcdManager:
         self._access_granted = False
 
     def load_my_identities(self):
+        response_token = requests.put(
+            url='http://169.254.169.254/latest/api/token',
+            headers={'X-aws-ec2-metadata-token-ttl-seconds': '60'}
+        )
+        token = response_token.text
         url = 'http://169.254.169.254/latest/dynamic/instance-identity/document'
-        response = requests.get(url)
+        response = requests.get(url, headers={'X-aws-ec2-metadata-token': token})
         if response.status_code != 200:
             raise EtcdClusterException('GET %s: code=%s content=%s', url, response.status_code, response.content)
         json = response.json()
